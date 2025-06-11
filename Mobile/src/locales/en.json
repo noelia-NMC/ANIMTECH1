@@ -1,0 +1,23 @@
+{
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "appearance": "Appearance",
+    "darkMode": "Dark Mode",
+    "language": "Language",
+    "notifications": "Notifications",
+    "collarAlerts": "Collar Alerts",
+    "reminders": "Appointment Reminders",
+    "about": "About",
+    "version": "App Version",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "logout": "Log Out"
+  },
+  "home": {
+    "greeting": "Hello, {{name}}!",
+    "howAreYou": "How are you feeling today?"
+  }
+}

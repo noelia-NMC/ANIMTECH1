@@ -1,0 +1,23 @@
+{
+  "settings": {
+    "title": "Ajustes",
+    "account": "Cuenta",
+    "editProfile": "Editar Perfil",
+    "changePassword": "Cambiar Contraseña",
+    "appearance": "Apariencia",
+    "darkMode": "Modo Oscuro",
+    "language": "Idioma",
+    "notifications": "Notificaciones",
+    "collarAlerts": "Alertas del Collar",
+    "reminders": "Recordatorios de Citas",
+    "about": "Acerca de",
+    "version": "Versión de la App",
+    "terms": "Términos y Condiciones",
+    "privacy": "Política de Privacidad",
+    "logout": "Cerrar Sesión"
+  },
+  "home": {
+    "greeting": "¡Hola, {{name}}!",
+    "howAreYou": "¿Cómo te sientes hoy?"
+  }
+}

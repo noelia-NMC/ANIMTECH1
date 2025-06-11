@@ -1,0 +1,11 @@
+# Node.js
+node_modules/
+.env
+dist/
+build/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
