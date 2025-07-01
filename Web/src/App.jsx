@@ -6,8 +6,9 @@ import Mascotas from './pages/Mascotas';
 import HistorialClinico from './pages/HistorialClinico';
 import Turnos from './pages/Turnos';
 import Veterinarios from './pages/Veterinarios';
-import PrivateRoute from './components/PrivateRoute'; // ✅
+import PrivateRoute from './components/PrivateRoute'; 
 import Teleconsultas from './pages/Teleconsultas';
+import Roles from './pages/Roles';
 
 function App() {
   return (
@@ -50,6 +51,12 @@ function App() {
         <Route path="/teleconsultas" element={
           <PrivateRoute allowedRoles={['admin', 'veterinario']}>
             <Teleconsultas />
+          </PrivateRoute>
+        } />
+
+        <Route path="/roles" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <Roles />
           </PrivateRoute>
         } />
       </Routes>

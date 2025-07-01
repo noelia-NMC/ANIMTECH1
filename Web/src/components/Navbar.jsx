@@ -32,6 +32,8 @@ export default function Navbar() {
               <NavLink as={Link} to="/turnos">Turnos</NavLink>
               <NavLink as={Link} to="/veterinarios">Veterinarios</NavLink>
               <NavLink as={Link} to="/teleconsultas">Teleconsultas</NavLink>
+              <NavLink as={Link} to="/roles">Roles</NavLink>
+
             </>
           )}
 

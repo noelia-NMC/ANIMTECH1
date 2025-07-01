@@ -10,9 +10,6 @@ exports.crearTeleconsulta = async (req, res) => {
         return res.status(400).json({ message: 'Se requiere la mascota y el motivo.' });
     }
     
-    // La consulta INSERT no necesita cambios, asume que las columnas son correctas.
-    // El error no estaba aquí, sino en los JOINs de las otras funciones y en la lógica de la FK.
-    // Asumimos que la foreign key en la tabla 'teleconsultas' apunta a 'perfiles_mascotas(id)'
     const result = await pool.query(
       `INSERT INTO teleconsultas (mascota_id, propietario_id, motivo, fecha, estado)
        VALUES ($1, $2, $3, NOW(), 'pendiente') RETURNING *`,
@@ -22,8 +19,6 @@ exports.crearTeleconsulta = async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error al crear teleconsulta', error);
-    // Si sigue fallando aquí, revisa la definición de tu tabla 'teleconsultas' en la base de datos.
-    // La foreign key de `mascota_id` debe apuntar a `perfiles_mascotas(id)`.
     res.status(500).json({ message: 'Error interno al crear la teleconsulta.' });
   }
 };
@@ -36,7 +31,7 @@ exports.obtenerPorVeterinario = async (req, res) => {
     const result = await pool.query(
       `SELECT t.*, m.nombre AS nombre_mascota, u.email AS propietario_email
        FROM teleconsultas t
-       JOIN perfiles_mascotas m ON t.mascota_id = m.id -- CAMBIO AQUÍ
+       JOIN perfiles_mascotas m ON t.mascota_id = m.id
        JOIN users u ON t.propietario_id = u.id
        WHERE t.veterinario_id = $1 OR t.estado = 'pendiente'
        ORDER BY t.estado = 'pendiente' DESC, t.fecha DESC`,
@@ -58,7 +53,7 @@ exports.obtenerPorPropietario = async (req, res) => {
     const result = await pool.query(
       `SELECT t.*, m.nombre AS nombre_mascota
        FROM teleconsultas t
-       JOIN perfiles_mascotas m ON t.mascota_id = m.id -- CAMBIO AQUÍ
+       JOIN perfiles_mascotas m ON t.mascota_id = m.id
        WHERE t.propietario_id = $1
        ORDER BY t.fecha DESC`,
       [propietarioId]
@@ -70,7 +65,7 @@ exports.obtenerPorPropietario = async (req, res) => {
   }
 };
 
-// Aceptar y Finalizar no necesitan cambios en el JOIN, así que se quedan igual.
+// Aceptar teleconsulta
 exports.aceptarTeleconsulta = async (req, res) => {
     try {
         const { id: consultaId } = req.params;
@@ -80,26 +75,31 @@ exports.aceptarTeleconsulta = async (req, res) => {
         if (!meet_link) {
             return res.status(400).json({ message: 'Se requiere el link de Meet.' });
         }
-
+        
+        // --- CORRECCIÓN AQUÍ ---
+        // Se eliminó el '=' extra en "veterinario_id = $2".
+        // También se reordenaron los parámetros para mayor claridad.
         const result = await pool.query(
             `UPDATE teleconsultas 
-             SET estado = 'aceptada', veterinario_id = = $1, meet_link = $2 
+             SET estado = 'aceptada', meet_link = $1, veterinario_id = $2
              WHERE id = $3 AND estado = 'pendiente' RETURNING *`,
-            [veterinario_id, meet_link, consultaId]
+            [meet_link, veterinario_id, consultaId] // Parámetros en el orden correcto
         );
 
         if (result.rowCount === 0) {
-            return res.status(404).json({ message: 'La consulta no se encontró o ya fue aceptada por otro veterinario.' });
+            return res.status(404).json({ message: 'La consulta no se encontró o ya fue aceptada.' });
         }
 
         res.json({ message: 'Consulta aceptada correctamente', consulta: result.rows[0] });
 
     } catch (error) {
-        console.error('Error al aceptar teleconsulta', error);
+        console.error('Error al aceptar teleconsulta:', error); // Mejor log para ver el error de la DB
         res.status(500).json({ message: 'Error interno al aceptar la teleconsulta.' });
     }
 };
 
+
+// Finalizar teleconsulta
 exports.finalizarTeleconsulta = async (req, res) => {
   try {
     const { id: consultaId } = req.params;

@@ -24,6 +24,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "540eadaf-b0b7-4fa2-b557-637fa87e6122"
+      }
+    },
+    "owner": "noeliamorato",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/540eadaf-b0b7-4fa2-b557-637fa87e6122"
     }
   }
 }

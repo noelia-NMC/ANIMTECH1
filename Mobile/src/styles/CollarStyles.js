@@ -1,187 +1,122 @@
 import styled from 'styled-components/native';
 
-export const Container = styled.ScrollView`
+export const Container = styled.View`
   flex: 1;
-  background-color: #ffffff;
+  background-color: #f4f6f8;
+  padding-bottom: 30px;
 `;
 
 export const Header = styled.View`
   background-color: #42a8a1;
-  padding: 20px;
-  align-items: center;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
+  padding: 40px 20px 20px 20px;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  elevation: 5;
 `;
 
 export const Title = styled.Text`
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
   color: white;
+  text-align: center;
 `;
 
 export const Subtitle = styled.Text`
   font-size: 14px;
   color: #ddf6f5;
+  text-align: center;
+  margin-top: 4px;
 `;
 
-// Estado general
-export const StatusContainer = styled.View`
-  background-color: ${({ alert }) => (alert ? '#ffeaea' : '#e0f7f7')};
-  margin: 15px;
-  border-radius: 12px;
+// Tarjeta de estado principal
+export const StatusCard = styled.View`
+  background-color: #fff;
+  margin: 20px 15px 10px 15px;
+  border-radius: 15px;
   padding: 15px;
-  elevation: 2;
+  elevation: 4;
+  flex-direction: row;
+  align-items: center;
+  border-left-width: 8px;
+  border-left-color: ${({ statusColor }) => statusColor || '#ccc'};
+`;
+
+export const StatusIcon = styled.Text`
+  font-size: 30px;
+  margin-right: 15px;
 `;
 
 export const StatusTitle = styled.Text`
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   color: #333;
 `;
 
 export const StatusDescription = styled.Text`
   font-size: 14px;
-  color: #555;
+  color: #666;
+  flex-wrap: wrap;
 `;
 
-// Métricas
-export const MetricsContainer = styled.View`
+// Grid para las métricas
+export const MetricsGrid = styled.View`
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: space-between;
   margin: 10px 15px;
 `;
 
+// Tarjeta de métrica individual
 export const MetricCard = styled.View`
-  background-color: white;
+  background-color: #fff;
   width: 48%;
-  border-radius: 12px;
-  padding: 15px;
-  elevation: 2;
-  border-left-width: 5px;
-  border-left-color: ${({ alert, color }) => (alert ? '#d05471' : color)};
-`;
-
-export const MetricTitle = styled.Text`
-  font-size: 13px;
-  color: #888;
-`;
-
-export const MetricValue = styled.Text`
-  font-size: 22px;
-  font-weight: bold;
-  color: ${({ alert }) => (alert ? '#d05471' : '#333')};
-`;
-
-export const MetricUnit = styled.Text`
-  font-size: 12px;
-  color: #999;
-`;
-
-export const AlertContainer = styled.View`
-  background-color: #ffeaea;
-  padding: 10px;
-  margin: 10px 15px;
-  border-radius: 8px;
-  flex-direction: row;
+  border-radius: 15px;
+  padding: 20px;
+  elevation: 4;
   align-items: center;
 `;
 
-export const AlertIcon = styled.Text`
-  font-size: 18px;
-  margin-right: 10px;
+export const MetricTitle = styled.Text`
+  font-size: 14px;
+  color: #888;
+  font-weight: 500;
+  margin-bottom: 8px;
 `;
 
-export const AlertText = styled.Text`
-  color: #d32f2f;
-  flex: 1;
+export const MetricValue = styled.Text`
+  font-size: 28px;
+  font-weight: bold;
+  color: ${({ color }) => color || '#333'};
 `;
 
-// Historial
-export const HistoryContainer = styled.View`
-  background-color: white;
-  margin: 15px;
-  padding: 15px;
-  border-radius: 12px;
-  elevation: 2;
-`;
-
-export const HistoryTitle = styled.Text`
+export const MetricUnit = styled.Text`
   font-size: 16px;
-  font-weight: bold;
-  color: #444;
-  margin-bottom: 10px;
-`;
-
-export const HistoryItem = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom-width: ${({ isLast }) => (isLast ? '0' : '1px')};
-  border-bottom-color: #eee;
-`;
-
-export const HistoryText = styled.Text`
-  font-size: 14px;
-  color: #555;
-`;
-
-export const HistoryValue = styled.Text`
-  font-size: 14px;
-  font-weight: bold;
-  color: ${({ alert }) => (alert ? '#d05471' : '#333')};
-`;
-
-export const ReportContainer = styled.View`
-  background-color: white;
-  margin: 15px;
-  padding: 15px;
-  border-radius: 12px;
-  elevation: 2;
-`;
-
-export const ReportRow = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 8px 0;
-`;
-
-export const ReportLabel = styled.Text`
-  font-size: 14px;
   color: #666;
 `;
 
-export const ReportValue = styled.Text`
-  font-size: 14px;
-  font-weight: bold;
-  color: ${({ status }) =>
-    status === 'danger' ? '#d05471' :
-    status === 'warning' ? '#ffa726' :
-    '#42a8a1'};
+// Contenedor del Mapa
+export const MapContainer = styled.View`
+  height: 250px;
+  margin: 10px 15px;
+  border-radius: 15px;
+  overflow: hidden; /* Esto es clave para que el mapa respete el borde redondeado */
+  elevation: 4;
 `;
 
-// Pestañas de navegación
-export const TabContainer = styled.View`
+// Tarjeta para cuando no hay GPS
+export const NoGpsCard = styled.View`
+  background-color: #fff;
+  margin: 10px 15px;
+  border-radius: 15px;
+  padding: 15px;
+  elevation: 4;
   flex-direction: row;
-  margin: 10px 15px 0 15px;
-  background-color: #f4f4f4;
-  border-radius: 10px;
-  overflow: hidden;
+  align-items: center;
+  border-left-width: 8px;
+  border-left-color: #546e7a;
 `;
 
-export const Tab = styled.TouchableOpacity`
-  flex: 1;
-  padding: 10px;
-  background-color: ${({ active }) => (active ? '#42a8a1' : 'transparent')};
-`;
-
-export const TabText = styled.Text`
-  text-align: center;
-  color: ${({ active }) => (active ? '#fff' : '#555')};
-  font-weight: ${({ active }) => (active ? 'bold' : 'normal')};
-`;
-
-export const NoDataText = styled.Text`
-  text-align: center;
-  color: #999;
-  padding: 20px;
+export const NoGpsText = styled.Text`
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
 `;

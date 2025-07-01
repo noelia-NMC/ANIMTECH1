@@ -20,3 +20,18 @@ export const registrarPerfilMascota = async (datosMascota) => {
         throw error.response?.data || new Error('Error al registrar la mascota');
     }
 };
+
+export const actualizarPerfilMascota = async (mascotaId, formData) => {
+    try {
+        // Al enviar FormData, es crucial establecer el header correcto.
+        const response = await API.put(`/perfiles-mascotas/${mascotaId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error en actualizarPerfilMascota:", error.response?.data);
+        throw error.response?.data || new Error('Error al actualizar la mascota');
+    }
+};

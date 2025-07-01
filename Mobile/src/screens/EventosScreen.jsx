@@ -1,207 +1,334 @@
-// 📁 src/screens/EventosScreen.jsx (VERSIÓN CORREGIDA)
+// src/screens/EventosScreen.jsx
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator, Platform } from 'react-native';
-import { Agenda, LocaleConfig } from 'react-native-calendars';
-import { Ionicons } from '@expo/vector-icons';
-import moment from 'moment';
+import React, { useState, useEffect, useCallback, Fragment } from 'react';
+import { Alert, Modal, ActivityIndicator, Text } from 'react-native';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import * as Notifications from 'expo-notifications';
-import { getEventos, addEvento, deleteEvento } from '../services/eventosService';
+import { Ionicons } from '@expo/vector-icons';
 
+import { getEventos, createEvento, deleteEvento } from '../services/eventosService';
+import { getMisPerfiles } from '../services/perfilMascotaService';
+
+import {
+  Container, ModalOverlay, ModalContent, ModalTitle, Label, Input, NotasInput,
+  PickerContainer, HoraSelector, HoraText, BtnContainer, CancelarBtn, CancelarText,
+  GuardarBtn, GuardarText, EventosContainer, EventoItem, EventoHeader, EventoTitle,
+  EliminarBtn, EliminarText, EventoNotas, ModalScrollContainer, calendarTheme,
+  EmptyContainer, EmptyText, EmptyIcon, TipoBadge, TipoText, AppointmentsHeader,
+  AppointmentsTitle, AddButton, AddButtonText, EventoMascota,
+  Header, BackButton, HeaderTitle, colors
+} from '../styles/EventosStyles';
+
+// Configuración de localización
 LocaleConfig.locales['es'] = {
-  monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-  monthNamesShort: ['Ene.', 'Feb.', 'Mar.', 'Abr.', 'May.', 'Jun.', 'Jul.', 'Ago.', 'Sep.', 'Oct.', 'Nov.', 'Dic.'],
-  dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-  dayNamesShort: ['Dom.', 'Lun.', 'Mar.', 'Mié.', 'Jue.', 'Vie.', 'Sáb.'],
+  monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+  monthNamesShort: ['Ene.','Feb.','Mar.','Abr.','May.','Jun.','Jul.','Ago.','Sep.','Oct.','Nov.','Dic.'],
+  dayNames: ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
+  dayNamesShort: ['Dom.','Lun.','Mar.','Mié.','Jue.','Vie.','Sáb.'],
   today: 'Hoy'
 };
 LocaleConfig.defaultLocale = 'es';
 
-const EventoIcon = ({ type }) => {
-    const icons = {
-        veterinario: { name: 'medical', color: '#e74c3c' },
-        vacuna: { name: 'eyedrop', color: '#3498db' },
-        comida: { name: 'fast-food', color: '#f1c40f' },
-        baño: { name: 'water', color: '#1abc9c' },
-        paseo: { name: 'walk', color: '#9b59b6' },
-        otro: { name: 'help-circle', color: '#95a5a6' }
-    };
-    const icon = icons[type] || icons.otro;
-    return <Ionicons name={icon.name} size={24} color={icon.color} style={styles.eventIcon} />;
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+// --- SOLUCIÓN: Sacamos esta función fuera del componente para que no se recree en cada render ---
+const eventColors = {
+    'vacuna': colors.error,
+    'consulta': '#3b82f6',
+    'medicamento': colors.success,
+    'baño': '#8b5cf6',
+    'desparasitacion': colors.warning,
+    'otro': colors.textTertiary
 };
+const getColorByType = (type) => eventColors[type] || colors.textTertiary;
 
-
-const EventosScreen = () => {
-  const [items, setItems] = useState({});
+const EventosScreen = ({ navigation }) => {
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [eventos, setEventos] = useState([]);
+  const [markedDates, setMarkedDates] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'));
-  const [eventTitle, setEventTitle] = useState('');
-  const [eventNotes, setEventNotes] = useState('');
-  const [eventType, setEventType] = useState('otro');
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadEvents = async () => {
-    setLoading(true);
+  // Estados del formulario del modal
+  const [title, setTitle] = useState('');
+  const [notes, setNotes] = useState('');
+  const [type, setType] = useState('vacuna');
+  const [horaRecordatorio, setHoraRecordatorio] = useState(new Date());
+  const [mostrarHora, setMostrarHora] = useState(false);
+  const [mascotaId, setMascotaId] = useState(null);
+  const [mascotas, setMascotas] = useState([]);
+
+  const tiposEventos = ['vacuna', 'consulta', 'medicamento', 'baño', 'desparasitacion', 'otro'];
+  
+  // --- SOLUCIÓN: Separamos la carga inicial de los refrescos ---
+
+  // useEffect para la carga inicial (SOLO SE EJECUTA UNA VEZ)
+  useEffect(() => {
+    const cargarDatosIniciales = async () => {
+      setIsLoading(true);
+      try {
+        await Notifications.requestPermissionsAsync();
+        const misMascotas = await getMisPerfiles();
+        
+        if (misMascotas && misMascotas.length > 0) {
+          setMascotas(misMascotas);
+          setMascotaId(misMascotas[0].id); // Establecemos la mascota por defecto
+        } else {
+          Alert.alert("No tienes mascotas", "Para usar el calendario, necesitas registrar una mascota.", [{ text: 'OK', onPress: () => navigation.goBack() }]);
+          setMascotas([]);
+        }
+        const eventosData = await getEventos();
+        setEventos(eventosData);
+      } catch (error) {
+        console.error('Error al cargar datos iniciales:', error);
+        Alert.alert('Error', 'No se pudo cargar la información. Por favor, intenta de nuevo.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    cargarDatosIniciales();
+  }, [navigation]); // Depende de `navigation` que es estable.
+
+  // useEffect para recargar eventos cuando la pantalla vuelve a tener foco
+  useEffect(() => {
+    const recargarAlEnfocar = async () => {
+      try {
+        const eventosData = await getEventos();
+        setEventos(eventosData);
+      } catch(e) {
+        console.log("No se pudieron recargar los eventos al enfocar la pantalla.");
+      }
+    }
+    const unsubscribe = navigation.addListener('focus', recargarAlEnfocar);
+    return unsubscribe;
+  }, [navigation]); // Este efecto ahora es simple y estable.
+
+  // useEffect para marcar las fechas del calendario
+  useEffect(() => {
+    const newMarkedDates = {};
+    eventos.forEach(evento => {
+      const date = evento.date;
+      if (!newMarkedDates[date]) { newMarkedDates[date] = { dots: [] }; }
+      if (!newMarkedDates[date].dots.some(dot => dot.key === evento.type)) {
+        newMarkedDates[date].dots.push({ key: evento.type, color: getColorByType(evento.type), selectedDotColor: 'white' });
+      }
+    });
+    if (selectedDate) {
+      newMarkedDates[selectedDate] = { ...newMarkedDates[selectedDate], selected: true, selectedColor: colors.primary, disableTouchEvent: true };
+    }
+    setMarkedDates(newMarkedDates);
+  }, [eventos, selectedDate]); // Eliminamos dependencias innecesarias y que cambian
+
+  const recargarEventos = async () => {
     try {
-      const eventos = await getEventos();
-      const formatted = {};
-      
-      eventos.forEach(evento => {
-        const dateStr = evento.date;
-        if (!formatted[dateStr]) formatted[dateStr] = [];
-        formatted[dateStr].push({
-          id: evento._id,
-          title: evento.title,
-          notes: evento.notes,
-          type: evento.type,
-        });
-      });
-      setItems(formatted);
+      setIsLoading(true);
+      const eventosData = await getEventos();
+      setEventos(eventosData);
     } catch (error) {
-      console.error("Fallo al cargar eventos, revisa el log del servicio.");
+      Alert.alert('Error', 'No se pudieron actualizar los eventos.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadEvents();
-  }, []); 
 
   const handleDayPress = (day) => {
     setSelectedDate(day.dateString);
+  };
+
+  const limpiarFormulario = () => {
+    setTitle('');
+    setNotes('');
+    setType('vacuna');
+    setHoraRecordatorio(new Date());
+  };
+
+  const abrirFormulario = () => {
+    if (mascotas.length === 0) {
+      Alert.alert("Sin Mascotas", "Debes registrar una mascota primero para poder crear eventos.");
+      return;
+    }
+    if (!selectedDate) {
+      Alert.alert("Selecciona una fecha", "Por favor, elige un día en el calendario para agregar un evento.");
+      return;
+    }
+    limpiarFormulario();
     setModalVisible(true);
   };
 
-  const scheduleNotification = async (date, title) => {
-      const eventDate = new Date(`${date}T09:00:00`);
-      if(eventDate < new Date()) return;
+  const validarFormulario = () => {
+    if (!title.trim()) { Alert.alert('Error', 'El título es obligatorio'); return false; }
+    if (!mascotaId) { Alert.alert('Error', 'Debe seleccionar una mascota'); return false; }
+    return true;
+  };
 
-      await Notifications.scheduleNotificationAsync({
-        content: { title: "¡Recordatorio de AnimTech! 🐾", body: `Hoy tienes un evento: ${title}`, data: { screen: 'Eventos' } },
-        trigger: eventDate,
-      });
-  }
+  const agendarRecordatorio = async () => {
+    if (!validarFormulario()) return;
+    const notifDate = new Date(horaRecordatorio);
+    const [yyyy, mm, dd] = selectedDate.split('-');
+    notifDate.setFullYear(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd));
 
-  const handleAddEvent = async () => {
-    if (!eventTitle.trim()) {
-      Alert.alert('Campo Requerido', 'Por favor, ingresa un título para el evento.');
-      return;
-    }
-    const newEventData = { title: eventTitle, date: selectedDate, notes: eventNotes, type: eventType };
-    
     try {
-      await addEvento(newEventData);
-      await scheduleNotification(selectedDate, eventTitle);
+      const nuevoEvento = {
+        title: title.trim(), date: selectedDate, notes: notes.trim() || null, type: type, mascotaId: mascotaId,
+      };
+      const eventoCreado = await createEvento(nuevoEvento);
+      await Notifications.scheduleNotificationAsync({
+        content: { title: '📅 Recordatorio de Mascota', body: `${title} - ${mascotas.find(m => m.id === mascotaId)?.nombre || 'Tu mascota'}`, data: { eventoId: eventoCreado.id } },
+        trigger: { date: notifDate },
+      });
+      Alert.alert('¡Éxito!', 'Evento guardado y recordatorio programado.');
       setModalVisible(false);
-      setEventTitle(''); setEventNotes(''); setEventType('otro');
-      await loadEvents(); // Recargamos los eventos
-    } catch(error) {
-      Alert.alert('Error', 'No se pudo guardar el evento.');
+      await recargarEventos();
+    } catch (error) {
+      Alert.alert('Error', `No se pudo guardar el evento: ${error.message || 'Error desconocido'}`);
     }
   };
 
-  const handleDeleteEvent = (eventId) => {
-      Alert.alert('Confirmar Eliminación', '¿Estás seguro?',
-          [
-              { text: 'Cancelar', style: 'cancel' },
-              { text: 'Eliminar', style: 'destructive', onPress: async () => {
-                  try {
-                      await deleteEvento(eventId);
-                      await loadEvents(); // Recargamos los eventos
-                  } catch (error) {
-                      Alert.alert('Error', 'No se pudo eliminar el evento.');
-                  }
-              }}
-          ]
-      )
+  const eliminarEvento = async (eventoId) => {
+    Alert.alert('Confirmar eliminación', '¿Estás seguro?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: async () => {
+          try {
+            await deleteEvento(eventoId);
+            Alert.alert('Éxito', 'Evento eliminado.');
+            await recargarEventos();
+          } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar el evento.');
+          }
+        }
+      }
+    ]);
+  };
+
+  const renderEventoItem = ({ item }) => (
+    <EventoItem borderColor={getColorByType(item.type)}>
+      <EventoHeader>
+        <EventoTitle>{item.title}</EventoTitle>
+        <EliminarBtn onPress={() => eliminarEvento(item.id)}>
+          <EliminarText>🗑️</EliminarText>
+        </EliminarBtn>
+      </EventoHeader>
+      <EventoMascota>Mascota: {item.mascota_nombre || 'No especificada'}</EventoMascota>
+      <TipoBadge bgColor={getColorByType(item.type)}>
+        <TipoText>{item.type}</TipoText>
+      </TipoBadge>
+      {item.notes && <EventoNotas>Notas: {item.notes}</EventoNotas>}
+    </EventoItem>
+  );
+
+  const renderEmptyList = () => (
+    <EmptyContainer>
+      <EmptyIcon>🗓️</EmptyIcon>
+      <EmptyText>No hay eventos para este día.</EmptyText>
+      <EmptyText>¡Toca en "+ Agregar" para crear uno!</EmptyText>
+    </EmptyContainer>
+  );
+
+  const renderCalendarHeader = () => (
+    <Fragment>
+      <Calendar
+        onDayPress={handleDayPress}
+        markedDates={markedDates}
+        markingType={'multi-dot'}
+        theme={calendarTheme}
+        style={{ margin: 10, borderRadius: 12, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
+        monthFormat={'MMMM yyyy'}
+        firstDay={1}
+      />
+      <AppointmentsHeader>
+        <AppointmentsTitle>Citas del {selectedDate}</AppointmentsTitle>
+        <AddButton onPress={abrirFormulario}>
+          <AddButtonText>+ AGREGAR</AddButtonText>
+        </AddButton>
+      </AppointmentsHeader>
+    </Fragment>
+  );
+
+  if (isLoading) {
+    return (
+      <Container style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <EmptyText>Cargando tu agenda...</EmptyText>
+      </Container>
+    );
   }
 
-  const renderItem = (item) => (
-      <TouchableOpacity style={styles.itemContainer} onPress={() => Alert.alert(item.title, item.notes || 'Sin notas adicionales.')}>
-        <EventoIcon type={item.type} />
-        <View style={styles.itemContent}>
-            <Text style={styles.itemTitle}>{item.title}</Text>
-            {item.notes ? <Text style={styles.itemNotes}>{item.notes}</Text> : null}
-        </View>
-        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteEvent(item.id)}>
-            <Ionicons name="trash-bin-outline" size={22} color="#e74c3c" />
-        </TouchableOpacity>
-      </TouchableOpacity>
-  );
-
-  const renderEmptyDate = () => (
-      <View style={styles.emptyDate}>
-        <Text style={styles.emptyDateText}>No hay eventos para este día.</Text>
-      </View>
-  );
-  
   return (
-    <View style={styles.container}>
-      <Agenda
-        items={items}
-        onDayPress={handleDayPress}
-        selected={moment().format('YYYY-MM-DD')}
-        renderItem={renderItem}
-        renderEmptyDate={renderEmptyDate}
-        rowHasChanged={(r1, r2) => r1.id !== r2.id}
-        theme={{
-            agendaDayTextColor: '#42a8a1', agendaDayNumColor: '#42a8a1', agendaTodayColor: '#e74c3c',
-            agendaKnobColor: '#42a8a1', selectedDayBackgroundColor: '#42a8a1', dotColor: '#42a8a1',
-            todayTextColor: '#e74c3c',
-        }}
+    <Container>
+      <Header>
+        <BackButton onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={28} color={colors.textPrimary} />
+        </BackButton>
+        <HeaderTitle>Calendario de eventos</HeaderTitle>
+      </Header>
+      
+      <EventosContainer
+        data={eventos.filter(e => e.date === selectedDate)}
+        renderItem={renderEventoItem}
+        keyExtractor={item => item.id.toString()}
+        ListHeaderComponent={renderCalendarHeader}
+        ListEmptyComponent={renderEmptyList}
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
-      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Añadir Evento para {moment(selectedDate).format('D [de] MMMM')}</Text>
-                    <TextInput style={styles.input} placeholder="Título del evento (ej. Cita veterinaria)" value={eventTitle} onChangeText={setEventTitle} />
-                    <TextInput style={[styles.input, {height: 80}]} placeholder="Notas adicionales..." value={eventNotes} onChangeText={setEventNotes} multiline />
-                    <Text style={styles.typeSelectorLabel}>Tipo de Evento:</Text>
-                    <View style={styles.typeSelector}>
-                        {['veterinario', 'vacuna', 'baño', 'paseo', 'comida', 'otro'].map(type => (
-                            <TouchableOpacity key={type} onPress={() => setEventType(type)} style={[styles.typeButton, eventType === type && styles.typeButtonSelected]}>
-                                <EventoIcon type={type} />
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                    <View style={styles.modalButtons}>
-                        <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
-                            <Text style={styles.buttonText}>Cancelar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleAddEvent}>
-                            <Text style={styles.buttonText}>Guardar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-        </Modal>
-        {loading && <ActivityIndicator style={StyleSheet.absoluteFill} size="large" color="#42a8a1" />}
-    </View>
-  );
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <ModalOverlay>
+          <ModalContent>
+            <ModalScrollContainer showsVerticalScrollIndicator={false}>
+              <ModalTitle>Nuevo evento - {selectedDate}</ModalTitle>
+              <Label>Título *</Label>
+              <Input placeholder="Ej: Vacuna antirrábica" value={title} onChangeText={setTitle} />
+              
+              <Label>Mascota *</Label>
+              <PickerContainer>
+                <Picker selectedValue={mascotaId} onValueChange={(itemValue) => setMascotaId(itemValue)} enabled={mascotas.length > 0}>
+                  {mascotas.map(m => <Picker.Item key={m.id} label={m.nombre} value={m.id} />)}
+                </Picker>
+              </PickerContainer>
+
+              <Label>Tipo de evento *</Label>
+              <PickerContainer>
+                <Picker selectedValue={type} onValueChange={setType}>
+                  {tiposEventos.map(t => <Picker.Item key={t} label={t.charAt(0).toUpperCase() + t.slice(1)} value={t} />)}
+                </Picker>
+              </PickerContainer>
+
+              <Label>Hora del recordatorio</Label>
+              <HoraSelector onPress={() => setMostrarHora(true)}>
+                <Text>⏰</Text>
+                <HoraText>{horaRecordatorio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</HoraText>
+              </HoraSelector>
+              {mostrarHora && (
+                <DateTimePicker value={horaRecordatorio} mode="time" is24Hour={true} display="default"
+                  onChange={(e, date) => { setMostrarHora(false); if (date) setHoraRecordatorio(date); }}
+                />
+              )}
+
+              <Label>Notas adicionales</Label>
+              <NotasInput placeholder="Información adicional..." value={notes} onChangeText={setNotes} multiline />
+
+              <BtnContainer>
+                <CancelarBtn onPress={() => setModalVisible(false)}>
+                  <CancelarText>Cancelar</CancelarText>
+                </CancelarBtn>
+                <GuardarBtn onPress={agendarRecordatorio}>
+                  <GuardarText>Guardar</GuardarText>
+                </GuardarBtn>
+              </BtnContainer>
+            </ModalScrollContainer>
+          </ModalContent>
+        </ModalOverlay>
+      </Modal>
+    </Container>
+  );  
 };
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f0f0' },
-  itemContainer: { backgroundColor: 'white', borderRadius: 10, padding: 15, marginRight: 10, marginTop: 17, flexDirection: 'row', alignItems: 'center', shadowColor: "#000", shadowOffset: { width: 0, height: 2, }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, },
-  itemContent: { flex: 1, marginLeft: 15 },
-  itemTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-  itemNotes: { fontSize: 14, color: '#666', marginTop: 4 },
-  emptyDate: { height: 60, alignItems: 'center', justifyContent: 'center', borderRadius: 10, marginRight: 10, marginTop: 17, backgroundColor: '#f9f9f9' },
-  emptyDateText: { color: '#aaa', fontStyle: 'italic' },
-  eventIcon: { width: 30, textAlign: 'center' },
-  deleteButton: { padding: 5, },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20, },
-  modalContent: { backgroundColor: 'white', borderRadius: 20, padding: 25, width: '100%', alignItems: 'center' },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#333' },
-  input: { width: '100%', borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 10, marginBottom: 15, fontSize: 16, },
-  typeSelectorLabel: { fontSize: 16, color: '#555', marginBottom: 10, alignSelf: 'flex-start' },
-  typeSelector: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20, width: '100%' },
-  typeButton: { padding: 10, borderRadius: 50, borderWidth: 2, borderColor: 'transparent' },
-  typeButtonSelected: { borderColor: '#42a8a1', backgroundColor: 'rgba(66, 168, 161, 0.1)' },
-  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, width: '100%' },
-  button: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', },
-  cancelButton: { backgroundColor: '#a0a0a0', marginRight: 10 },
-  saveButton: { backgroundColor: '#42a8a1' },
-  buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-});
+
 export default EventosScreen;

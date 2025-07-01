@@ -46,7 +46,47 @@ const crearPerfilMascota = async (req, res) => {
     }
 };
 
+const actualizarPerfilMascota = async (req, res) => {
+    const mascotaId = req.params.id;
+    const propietarioId = req.user.id;
+    const { nombre, especie, raza, fecha_nacimiento, genero, notas_adicionales, collar_id } = req.body;
+    
+    // La URL de la foto ahora vendrá de Cloudinary si se sube un nuevo archivo
+    // req.file es añadido por el middleware de Multer
+    let fotoUrlFinal = req.body.foto_url; // Usar la URL existente por defecto
+    if (req.file) {
+      fotoUrlFinal = req.file.path; // Si se sube un nuevo archivo, usamos su URL de Cloudinary
+    }
+
+    try {
+        const petCheck = await pool.query(
+            'SELECT foto_url FROM perfiles_mascotas WHERE id = $1 AND propietario_id = $2',
+            [mascotaId, propietarioId]
+        );
+
+        if (petCheck.rows.length === 0) {
+            return res.status(404).json({ message: 'Mascota no encontrada o no tienes permiso.' });
+        }
+        
+        // (Opcional pero recomendado) Si se sube una foto nueva, se podría borrar la anterior de Cloudinary
+
+        const result = await pool.query(
+            `UPDATE perfiles_mascotas 
+             SET nombre = $1, especie = $2, raza = $3, fecha_nacimiento = $4, genero = $5, foto_url = $6, notas_adicionales = $7, collar_id = $8
+             WHERE id = $9 RETURNING *`,
+            [nombre, especie, raza, fecha_nacimiento, genero, fotoUrlFinal, notas_adicionales, collar_id, mascotaId]
+        );
+
+        res.json({ message: 'Perfil de mascota actualizado con éxito', mascota: result.rows[0] });
+    } catch (error) {
+        // ... (manejo de errores existente)
+        console.error('Error al actualizar perfil de mascota:', error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+};
+
 module.exports = {
     getMisPerfilesMascotas,
     crearPerfilMascota,
+    actualizarPerfilMascota,
 };

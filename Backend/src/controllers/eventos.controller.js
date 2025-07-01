@@ -1,39 +1,97 @@
-const Evento = require('../models/evento.model');
+// 📁 backend/src/controllers/eventos.controller.js
+const pool = require('../db');
+
+const ALLOWED_TYPES = [
+  'vacuna',
+  'consulta',
+  'medicamento',
+  'baño',
+  'desparasitacion',
+  'otro',
+];
 
 exports.getEventos = async (req, res) => {
   try {
-    const eventos = await Evento.find({ userId: req.user.id }).sort('date');
-    res.status(200).json(eventos);
+    const userId = req.user.id;
+    const query = `
+      SELECT 
+        e.id, 
+        e.title, 
+        TO_CHAR(e.date, 'YYYY-MM-DD') as date, 
+        e.notes, 
+        e.type, 
+        e.mascota_id, 
+        pm.nombre as mascota_nombre
+      FROM eventos e
+      JOIN perfiles_mascotas pm ON e.mascota_id = pm.id
+      WHERE e.user_id = $1
+      ORDER BY e.date ASC, e.id ASC
+    `;
+    const result = await pool.query(query, [userId]);
+    res.status(200).json(result.rows);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los eventos', error });
+    console.error('Error en getEventos:', error);
+    res.status(500).json({ message: 'Error interno del servidor al obtener eventos.' });
   }
 };
 
+/**
+ * Crea un nuevo evento asociado a un usuario y una de sus mascotas.
+ */
 exports.createEvento = async (req, res) => {
   try {
-    const { title, date, notes, type } = req.body;
-    const nuevoEvento = new Evento({
-      title,
-      date,
-      notes,
-      type,
-      userId: req.user.id, 
-    });
-    await nuevoEvento.save();
-    res.status(201).json({ message: 'Evento creado exitosamente', evento: nuevoEvento });
+    const userId = req.user.id;
+    let { title, date, notes, type, mascotaId } = req.body;
+
+    if (!title || !date || !mascotaId) {
+      return res.status(400).json({
+        message: 'El título, la fecha y la mascota son obligatorios.',
+      });
+    }
+
+    // Normalizamos y validamos el tipo
+    type = (type || 'otro').toLowerCase().trim();
+    if (!ALLOWED_TYPES.includes(type)) {
+      return res.status(400).json({
+        message: `Tipo de evento inválido. Debe ser uno de: ${ALLOWED_TYPES.join(
+          ', '
+        )}.`,
+      });
+    }
+
+    const query = `
+      INSERT INTO eventos (title, date, notes, type, user_id, mascota_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `;
+    const values = [title.trim(), date, notes?.trim() || null, type, userId, mascotaId];
+
+    const result = await pool.query(query, values);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear el evento', error });
+    console.error('Error en createEvento:', error);
+    res
+      .status(500)
+      .json({ message: 'Error interno del servidor al crear el evento.' });
   }
 };
-
+/**
+ * Elimina un evento, verificando que pertenezca al usuario que realiza la solicitud.
+ */
 exports.deleteEvento = async (req, res) => {
   try {
-    const evento = await Evento.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-    if (!evento) {
-      return res.status(404).json({ message: 'Evento no encontrado o no tienes permiso para eliminarlo' });
+    const eventoId = req.params.id;
+    const userId = req.user.id;
+
+    const query = `DELETE FROM eventos WHERE id = $1 AND user_id = $2 RETURNING id`;
+    const result = await pool.query(query, [eventoId, userId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Evento no encontrado o no autorizado para eliminar.' });
     }
-    res.status(200).json({ message: 'Evento eliminado exitosamente' });
+    res.status(200).json({ message: 'Evento eliminado exitosamente.' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el evento', error });
+    console.error('Error en deleteEvento:', error);
+    res.status(500).json({ message: 'Error interno del servidor al eliminar el evento.' });
   }
 };
