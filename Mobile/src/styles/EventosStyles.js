@@ -27,8 +27,7 @@ const colors = {
 // Re-exportamos los colores por si se usan en el componente
 export { colors };
 
-
-// --- NUEVOS ESTILOS PARA EL HEADER ---
+// --- ESTILOS PARA EL HEADER ---
 export const Header = styled.View`
   padding: 20px;
   padding-top: 30px;
@@ -49,10 +48,48 @@ export const HeaderTitle = styled.Text`
   color: ${colors.textPrimary};
 `;
 
+// --- NUEVOS ESTILOS PARA RECORDATORIOS ---
+export const ReminderContainer = styled.View`
+  margin-top: 20px;
+  margin-bottom: 10px;
+`;
+
+export const ReminderLabel = styled.Text`
+  font-size: 13px;
+  font-weight: 500;
+  color: ${colors.textSecondary};
+  margin-bottom: 12px;
+  letter-spacing: -0.1px;
+  text-transform: uppercase;
+`;
+
+export const ReminderOptionsContainer = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const ReminderOption = styled.TouchableOpacity`
+  padding: 8px 12px;
+  border-radius: 16px;
+  border-width: 1px;
+  border-color: ${props => props.selected ? colors.primary : colors.border};
+  background-color: ${props => props.selected ? colors.primary : colors.surfaceElevated};
+  margin-bottom: 6px;
+`;
+
+export const ReminderOptionText = styled.Text`
+  font-size: 11px;
+  font-weight: ${props => props.selected ? '600' : '400'};
+  color: ${props => props.selected ? colors.surface : colors.textSecondary};
+  text-align: center;
+`;
+
 // --- RESTO DE LOS ESTILOS (SIN CAMBIOS) ---
 export const Container = styled.View`
   flex: 1;
   background-color: ${colors.background};
+  padding-top: 10px;
 `;
 
 export const calendarTheme = {
@@ -92,7 +129,7 @@ export const ModalContent = styled.View`
   padding: 24px;
   width: 100%;
   max-width: 380px;
-  max-height: 88%;
+  max-height: 90%;
   elevation: 20;
   shadow-color: ${colors.primary};
   shadow-offset: 0px 8px;

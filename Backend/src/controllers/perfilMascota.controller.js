@@ -1,4 +1,4 @@
-// app src/controllers/perfilMascota.controller.js
+// app src/controllers/perfilMascota.controller.js   //mobile
 const pool = require('../db');
 
 const getMisPerfilesMascotas = async (req, res) => {

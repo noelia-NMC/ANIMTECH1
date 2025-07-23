@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../db');                  // web
 
 const getTurnos = async (req, res) => {
   const clinicaId = req.headers['clinica-id'];

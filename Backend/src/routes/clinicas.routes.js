@@ -1,14 +1,22 @@
-// Backend/src/routes/clinicas.routes.js    para maps clinicas y refugios
+// Backend/src/routes/clinicas.routes.js   para refugios y veterinarios en app movil
 const { Router } = require('express');
 const router = Router();
 
-// Importamos la nueva función del controlador
-const { searchOSMClinicasAvanzado } = require('../controllers/clinica.controller');
+// Importamos las funciones del controlador
+const { 
+  searchOSMClinicasAvanzado, 
+  clearCache, 
+  getCacheStats 
+} = require('../controllers/clinica.controller');
 
-// Opcional: Descomenta la línea de 'verifyToken' si quieres proteger la ruta
+// Opcional: Descomenta si quieres proteger las rutas
 // const { verifyToken } = require('../middlewares/auth.middleware');
 
-// Ruta final, usando el prefijo 'osm' para claridad
+// Ruta principal optimizada
 router.get('/osm-nearby', /* verifyToken, */ searchOSMClinicasAvanzado);
+
+// Rutas adicionales para administración del cache (útiles para desarrollo y monitoreo)
+router.post('/cache/clear', /* verifyToken, */ clearCache);
+router.get('/cache/stats', /* verifyToken, */ getCacheStats);
 
 module.exports = router;

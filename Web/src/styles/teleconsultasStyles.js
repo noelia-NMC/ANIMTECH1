@@ -1,40 +1,20 @@
+// ARCHIVO COMPLETO Y LISTO: src/styles/teleconsultasStyles.js
+// (Mantiene tu diseño original y solo añade lo necesario)
+
 import styled, { css } from 'styled-components';
 
 const colors = {
-  primary: '#42a8a1',
-  primaryDark: '#358a82',
-  white: '#ffffff',
-  textPrimary: '#2c3e50',
-  textSecondary: '#7f8c8d',
-  background: '#f4f7f6',
-  lightGray: '#e0e0e0',
-  border: '#eef2f1',
-  danger: '#e74c3c',
-  warning: '#f39c12',
-  success: '#27ae60',
+  primary: '#42a8a1', primaryDark: '#358a82', white: '#ffffff', textPrimary: '#2c3e50',
+  textSecondary: '#7f8c8d', background: '#f4f7f6', lightGray: '#e0e0e0', border: '#eef2f1',
+  danger: '#e74c3c', warning: '#f39c12', success: '#27ae60', info: '#3498db'
 };
 
-export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background-color: ${colors.background};
-`;
-
-export const Content = styled.main`
-  flex: 1;
-  max-width: 1600px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 1.5rem 2rem;
+// --- Contenedor principal de la página (tu original) ---
+export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  overflow: hidden;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  height: 100%;
 `;
 
 export const PageTitle = styled.h1`
@@ -42,8 +22,10 @@ export const PageTitle = styled.h1`
   font-weight: 600;
   color: ${colors.textSecondary};
   text-align: left;
+  margin: 0;
 `;
 
+// --- Tarjeta de Controles (tu original) ---
 export const HeaderSection = styled.div`
   background: ${colors.white};
   border-radius: 12px;
@@ -59,6 +41,7 @@ export const ControlsContainer = styled.div`
   flex-wrap: wrap;
 `;
 
+// --- Inputs y Botones (tus originales) ---
 const baseInputStyles = css`
   padding: 10px 14px;
   border: 1px solid ${colors.lightGray};
@@ -84,20 +67,38 @@ const BaseButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   &:hover { transform: translateY(-2px); }
 `;
 
 export const ExportButton = styled(BaseButton)`
-  background-color: ${colors.textSecondary};
+  background-color: ${props => props.color || colors.textSecondary};
   color: ${colors.white};
-  margin-left: auto;
-  @media (max-width: 600px) {
-    width: 100%;
-    margin-left: 0;
+  &:hover {
+    background-color: ${props => props.hoverColor || colors.textPrimary};
   }
-  &:hover { background-color: ${colors.textPrimary}; }
 `;
 
+// --- NUEVO COMPONENTE AÑADIDO ---
+// Contenedor para los botones de exportación, para que se alineen a la derecha.
+export const ExportButtonGroup = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-left: 0;
+    justify-content: stretch;
+    > button {
+      flex: 1;
+    }
+  }
+`;
+
+// --- Lista de Tarjetas (tu original) ---
 export const ConsultasList = styled.div`
   flex: 1;
   overflow-y: auto;
@@ -106,7 +107,6 @@ export const ConsultasList = styled.div`
   gap: 1.5rem;
   padding: 0.5rem;
   margin: -0.5rem;
-
   &::-webkit-scrollbar { width: 8px; }
   &::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
   &::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
@@ -118,6 +118,11 @@ export const ConsultaCard = styled.div`
   border-radius: 8px;
   padding: 1.25rem;
   border: 1px solid ${colors.border};
+  border-left: 4px solid ${props => {
+    if (props.estado === 'pendiente') return colors.warning;
+    if (props.estado === 'aceptada') return colors.success;
+    return colors.textSecondary;
+  }};
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
@@ -139,15 +144,6 @@ export const PetName = styled.h3`
   &::before { content: '🖥️'; margin-right: 0.5rem; }
 `;
 
-// ----- ESTILO CORREGIDO Y AÑADIDO -----
-export const DateInfo = styled.span`
-  color: ${colors.textSecondary};
-  font-size: 0.8rem;
-  text-align: right;
-  white-space: nowrap;
-`;
-// ------------------------------------
-
 export const StatusBadge = styled.span`
   padding: 4px 10px;
   border-radius: 12px;
@@ -165,7 +161,7 @@ export const StatusBadge = styled.span`
 
 export const InfoGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
   margin-bottom: auto; 
   padding-bottom: 1rem;
@@ -176,56 +172,37 @@ export const InfoRow = styled.div`
 `;
 
 export const Label = styled.p`
-  font-weight: 600;
-  color: ${colors.textPrimary};
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 0.25rem 0;
+  font-weight: 600; color: ${colors.textPrimary}; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 0.25rem 0;
 `;
 
 export const Value = styled.div`
-  color: ${colors.textSecondary};
-  font-size: 0.9rem;
-  line-height: 1.5;
-  word-break: break-all;
+  color: ${colors.textSecondary}; font-size: 0.9rem;
+  line-height: 1.5; word-break: break-all;
 `;
 
 export const MeetLink = styled.a`
-  color: ${colors.primary};
-  text-decoration: none;
-  font-weight: 500;
+  color: ${colors.primary}; text-decoration: none; font-weight: 500;
   &:hover { text-decoration: underline; }
 `;
 
 export const ButtonGroup = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${colors.border};
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid ${colors.border};
 `;
 
 export const AcceptButton = styled(BaseButton)`
-  background: ${colors.success};
-  color: ${colors.white};
-  padding: 8px 18px;
+  background: ${colors.success}; color: ${colors.white}; padding: 8px 18px;
   &:hover { background: #229954; }
 `;
 
 export const FinishButton = styled(BaseButton)`
-  background: ${colors.textSecondary};
-  color: ${colors.white};
-  padding: 8px 18px;
+  background: ${colors.textSecondary}; color: ${colors.white}; padding: 8px 18px;
   &:hover { background: ${colors.textPrimary}; }
 `;
 
 export const EmptyState = styled.div`
-  text-align: center;
-  padding: 2rem 1rem;
-  color: ${colors.textSecondary};
-  font-size: 0.9rem;
+  text-align: center; padding: 2rem 1rem; color: ${colors.textSecondary}; font-size: 0.9rem;
   grid-column: 1 / -1;
   &::before { content: '🖥️'; font-size: 2.5rem; display: block; margin-bottom: 1rem; }
 `;

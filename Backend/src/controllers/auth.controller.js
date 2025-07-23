@@ -1,4 +1,4 @@
-// Este es tu backend/src/controllers/auth.controller.js
+// Backend/src/controllers/auth.controller.js   web
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
@@ -24,10 +24,9 @@ const registerUser = async (req, res) => {
     }
     const rolId = rolVeterinario.rows[0].id;
 
-    // Asumimos una clinica_id por defecto o null si no aplica. Por ejemplo, la clínica principal es ID 1.
     const clinicaIdPorDefecto = 1; 
-
     const hashedPassword = await bcrypt.hash(password, 10);
+    
     const result = await pool.query(
       'INSERT INTO users (email, password, rol_id, clinica_id) VALUES ($1, $2, $3, $4) RETURNING id, email, rol_id, clinica_id',
       [email, hashedPassword, rolId, clinicaIdPorDefecto] 
@@ -35,7 +34,7 @@ const registerUser = async (req, res) => {
 
     const newUser = result.rows[0];
     
-    // El token ahora incluye el rol_id
+    // ESTRUCTURA CONSISTENTE DEL TOKEN
     const token = jwt.sign({ 
         id: newUser.id, 
         email: newUser.email,
@@ -43,13 +42,14 @@ const registerUser = async (req, res) => {
         clinica_id: newUser.clinica_id
     }, process.env.JWT_SECRET, { expiresIn: '8h' });
 
+    // RESPUESTA CONSISTENTE
     res.status(201).json({
       token,
       user: {
         id: newUser.id,
         email: newUser.email,
-        // Devolvemos el nombre del rol para que el frontend lo pueda usar.
         rol: 'veterinario', 
+        rol_id: newUser.rol_id, // AÑADIDO
         clinica_id: newUser.clinica_id
       }
     });
@@ -62,10 +62,12 @@ const registerUser = async (req, res) => {
 // Esta función es para el login de la web
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  
   try {
-    // CORRECCIÓN IMPORTANTE: Ahora unimos con la tabla de roles.
+    // CONSULTA MEJORADA - Obtenemos más información
     const query = `
-        SELECT u.id, u.email, u.password, u.clinica_id, u.rol_id, r.nombre as rol_nombre
+        SELECT u.id, u.email, u.password, u.clinica_id, u.rol_id, u.nombre, u.apellido, u.telefono,
+               r.nombre as rol_nombre
         FROM users u
         JOIN roles r ON u.rol_id = r.id
         WHERE u.email = $1 AND r.nombre IN ('admin', 'veterinario')
@@ -82,6 +84,7 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Contraseña incorrecta.' });
     }
 
+    // ESTRUCTURA CONSISTENTE DEL TOKEN
     const token = jwt.sign({ 
         id: user.id, 
         email: user.email,
@@ -89,13 +92,18 @@ const loginUser = async (req, res) => {
         clinica_id: user.clinica_id
     }, process.env.JWT_SECRET, { expiresIn: '8h' });
 
+    // RESPUESTA COMPLETA Y CONSISTENTE
     res.json({
       token,
       user: {
         id: user.id,
         email: user.email,
-        rol: user.rol_nombre, // Enviamos el nombre del rol.
-        clinica_id: user.clinica_id
+        rol: user.rol_nombre,
+        rol_id: user.rol_id, // CRÍTICO: Añadido para preservar rol_id
+        clinica_id: user.clinica_id,
+        nombre: user.nombre || '',
+        apellido: user.apellido || '',
+        telefono: user.telefono || ''
       }
     });
   } catch (err) {

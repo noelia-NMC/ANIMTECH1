@@ -6,9 +6,15 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
-// ******** LA CORRECCIÓN ESTÁ AQUÍ ********
-import { View, Text, StyleSheet, Alert, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
-// *****************************************
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Alert, 
+  Image, 
+  ActivityIndicator, 
+  TouchableOpacity 
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,12 +23,12 @@ import { getMiPerfilUsuario } from '../services/userService';
 import { getMisPerfiles } from '../services/perfilMascotaService'; 
 
 // Importación de Pantallas
-import HomeScreen from '../screens/HomeScreen';
-import YoRescatoScreen from '../screens/YoRescatoScreen';
-import RescatesActivosScreen from '../screens/RescatesActivosScreen';
-import ComunidadScreen from '../screens/ComunidadScreen';
-import TeleconsultaScreen from '../screens/TeleconsultaScreen';
-import ClinicasMapScreen from '../screens/ClinicasMapScreen';
+import HomeScreen from '../screens/home/HomeScreen';
+import YoRescatoScreen from '../screens/rescue/YoRescatoScreen';
+import RescatesActivosScreen from '../screens/rescue/RescatesMainScreen';
+import ComunidadScreen from '../screens/community/ComunidadScreen';
+import TeleconsultaScreen from '../screens/community/TeleconsultaScreen';
+import ClinicasMapScreen from '../screens/maps/ClinicasMapScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -49,7 +55,10 @@ const DrawerProfileHeader = () => {
       const fetchData = async () => {
         if (!loading) setLoading(true); 
         try {
-          const [userData, petData] = await Promise.all([ getMiPerfilUsuario(), getMisPerfiles() ]);
+          const [userData, petData] = await Promise.all([ 
+            getMiPerfilUsuario(), 
+            getMisPerfiles() 
+          ]);
           setUsuario(userData);
           setMascota(petData?.[0] || null);
         } catch (error) {
@@ -76,8 +85,12 @@ const DrawerProfileHeader = () => {
               )}
             </View>
             <View style={styles.headerTextContainer}>
-                <Text numberOfLines={1} style={styles.headerPetName}>{loading ? 'Cargando...' : mascota?.nombre || 'Mi Mascota'}</Text>
-                <Text numberOfLines={1} style={styles.headerUserName}>{loading ? ' ' : `Prop: ${usuario?.nombre || 'Tú'}`}</Text>
+                <Text numberOfLines={1} style={styles.headerPetName}>
+                  {loading ? 'Cargando...' : mascota?.nombre || 'Mi Mascota'}
+                </Text>
+                <Text numberOfLines={1} style={styles.headerUserName}>
+                  {loading ? ' ' : `Prop: ${usuario?.nombre || 'Tú'}`}
+                </Text>
             </View>
         </View>
         <View style={styles.headerSeparator} />
@@ -85,12 +98,31 @@ const DrawerProfileHeader = () => {
   );
 };
 
-
 const CustomDrawerContent = (props) => {
   const logout = async () => {
-      try { await AsyncStorage.multiRemove(['userToken', 'welcomeShown']); props.navigation.dispatch(CommonActions.reset({index: 0, routes: [{ name: 'Login' }]}));} catch (error) { console.error('Error al cerrar sesión:', error);}
+      try { 
+        await AsyncStorage.multiRemove(['userToken', 'welcomeShown']); 
+        props.navigation.dispatch(
+          CommonActions.reset({
+            index: 0, 
+            routes: [{ name: 'Login' }]
+          })
+        );
+      } catch (error) { 
+        console.error('Error al cerrar sesión:', error);
+      }
   };
-  const confirmLogout = () => { Alert.alert('Cerrar sesión', '¿Estás seguro de que quieres salir?', [{ text: 'Cancelar', style: 'cancel' }, { text: 'Sí, salir', onPress: logout, style: 'destructive' }] );};
+  
+  const confirmLogout = () => { 
+    Alert.alert(
+      'Cerrar sesión', 
+      '¿Estás seguro de que quieres salir?', 
+      [
+        { text: 'Cancelar', style: 'cancel' }, 
+        { text: 'Sí, salir', onPress: logout, style: 'destructive' }
+      ] 
+    );
+  };
 
   return (
     <View style={styles.drawerContainer}>
@@ -115,8 +147,13 @@ const CustomDrawerContent = (props) => {
 };
 
 const screenIcons = {
-  'Inicio': 'home', 'Yo Rescato': 'megaphone', 'Ver Rescates': 'search', 
-  'Comunidad': 'people', 'Teleconsulta': 'medkit', 'Clínicas Maps': 'map'
+  'Inicio': 'home', 
+  'Collar Inteligente': 'watch',
+  'Yo Rescato': 'megaphone', 
+  'Ver Rescates': 'search', 
+  'Comunidad': 'people', 
+  'Teleconsulta': 'medkit', 
+  'Clínicas Maps': 'map'
 };
 
 const MainDrawer = () => {
@@ -135,7 +172,11 @@ const MainDrawer = () => {
           const iconName = screenIcons[route.name] || 'alert-circle';
           return (
             <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-                <Ionicons name={focused ? iconName : `${iconName}-outline`} size={focused ? size-2 : size} color={focused ? colors.primaryDark : color} />
+                <Ionicons 
+                  name={focused ? iconName : `${iconName}-outline`} 
+                  size={focused ? size-2 : size} 
+                  color={focused ? colors.primaryDark : color} 
+                />
             </View>
           );
         },

@@ -1,5 +1,3 @@
-// src/styles/HomeStyles.js
-
 import styled from 'styled-components/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Dimensions, Platform } from 'react-native';
@@ -13,7 +11,7 @@ const colors = {
   secondary: '#5dc1b9',
   accent: '#8ae0db',
   accentLight: '#b5ffff',
-  background: '#eef2f5', // Un fondo más claro y limpio
+  background: '#eef2f5',
   surface: '#f8fafc',
   textPrimary: '#1f2937',
   textSecondary: '#4b5563',
@@ -22,6 +20,7 @@ const colors = {
   error: '#ef4444',
   shadowLight: '#ffffff',
   shadowDark: 'rgba(163, 177, 198, 0.6)',
+  chatbot: '#42a8a1',
 };
 
 export const Container = styled.View`
@@ -37,9 +36,8 @@ export const CenteredContainer = styled.View`
   padding: 24px;
 `;
 
-// --- Header con diseño asimétrico ---
 export const GradientHeader = styled(LinearGradient)`
-  padding-top: 40px; 
+  padding-top: 30px; 
   padding-bottom: 50px;
   padding-horizontal: 24px;
   border-bottom-left-radius: 50px;
@@ -91,7 +89,6 @@ export const NotificationText = styled.Text`
   font-weight: 700;
 `;
 
-// Contenedor del scroll
 export const Content = styled.ScrollView.attrs({
   contentContainerStyle: {
     paddingBottom: 130,
@@ -99,10 +96,9 @@ export const Content = styled.ScrollView.attrs({
 })`
   padding-horizontal: 20px;
   flex: 1;
-  margin-top: -30px; /* Traslape sobre el header */
+  margin-top: -30px;
 `;
 
-// Tarjeta de bienvenida estilo Neumorphism
 export const WelcomeSection = styled.View`
   flex-direction: row;
   justify-content: space-between;
@@ -116,11 +112,9 @@ export const WelcomeSection = styled.View`
   shadow-opacity: 1;
   shadow-radius: 12px;
   ${Platform.select({
-  android: { elevation: 8 },
-  ios: `
-      box-shadow: -6px -6px 12px ${colors.shadowLight};
-    `
-})}
+    android: { elevation: 8 },
+    ios: `box-shadow: -6px -6px 12px ${colors.shadowLight};`
+  })}
 `;
 
 export const WelcomeMessage = styled.Text`
@@ -146,11 +140,9 @@ export const PetAvatarContainer = styled.TouchableOpacity`
   shadow-opacity: 1;
   shadow-radius: 8px;
   ${Platform.select({
-  android: { elevation: 6 },
-  ios: `
-      box-shadow: -4px -4px 8px ${colors.shadowLight};
-    `
-})}
+    android: { elevation: 6 },
+    ios: `box-shadow: -4px -4px 8px ${colors.shadowLight};`
+  })}
 `;
 
 export const PetAvatar = styled.Image`
@@ -159,7 +151,6 @@ export const PetAvatar = styled.Image`
   border-radius: 27px;
 `;
 
-// --- Grid de tarjetas de acción ---
 export const CardsGrid = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
@@ -177,11 +168,9 @@ export const Card = styled.TouchableOpacity`
   shadow-opacity: 1;
   shadow-radius: 16px;
   ${Platform.select({
-  android: { elevation: 10 },
-  ios: `
-      box-shadow: -8px -8px 16px ${colors.shadowLight};
-    `
-})}
+    android: { elevation: 10 },
+    ios: `box-shadow: -8px -8px 16px ${colors.shadowLight};`
+  })}
 `;
 
 export const CardGradient = styled(LinearGradient)`
@@ -219,7 +208,6 @@ export const CardDescription = styled.Text`
   line-height: 16px;
 `;
 
-// --- Navegación Inferior Flotante ---
 export const FooterContainer = styled.View`
   position: absolute;
   bottom: 0;
@@ -242,11 +230,9 @@ export const BottomNavigation = styled.View`
   shadow-opacity: 1;
   shadow-radius: 20px;
    ${Platform.select({
-  android: { elevation: 12 },
-  ios: `
-      box-shadow: -10px -10px 20px ${colors.shadowLight};
-    `
-})}
+    android: { elevation: 12 },
+    ios: `box-shadow: -10px -10px 20px ${colors.shadowLight};`
+  })}
 `;
 
 export const NavButton = styled.TouchableOpacity`
@@ -281,23 +267,34 @@ export const QuickActionButton = styled.TouchableOpacity`
 
 export const ButtonNotch = styled.View``;
 
-
-
-
-
-// --- ICONO DE CAMBIO MÁS PEQUEÑO ---
 export const ChangePetIcon = styled.View`
   position: absolute;
   bottom: -4px;
   right: -4px;
   background-color: ${colors.primary};
-  border-radius: 10px; /* Más pequeño */
-  padding: 3px; /* Más pequeño */
+  border-radius: 10px;
+  padding: 3px;
   border: 2px solid #fff;
   elevation: 8;
 `;
 
-// Contenedor del Modal
+export const ChatbotButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 120px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${colors.chatbot};
+  justify-content: center;
+  align-items: center;
+  shadow-color: ${colors.chatbot};
+  shadow-offset: 0px 6px;
+  shadow-opacity: 0.4;
+  shadow-radius: 12px;
+  elevation: 12;
+`;
+
 export const ModalOverlay = styled.TouchableOpacity.attrs({
   activeOpacity: 1,
 })`
@@ -325,7 +322,7 @@ export const ModalHeader = styled.View`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding-left: 30px; /* Espacio para que el título se centre bien */
+  padding-left: 30px;
 `;
 
 export const ModalTitle = styled.Text`
@@ -340,7 +337,6 @@ export const CloseModalButton = styled.TouchableOpacity`
   padding: 5px;
 `;
 
-// Estilos para la lista de mascotas en el modal
 export const PetSelectItem = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
@@ -365,7 +361,6 @@ export const PetSelectName = styled.Text`
   color: #333;
 `;
 
-// Botón para añadir más mascotas
 export const AddPetButton = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
@@ -382,5 +377,3 @@ export const AddPetButtonText = styled.Text`
   color: #388e3c;
   margin-left: 10px;
 `;
-
-

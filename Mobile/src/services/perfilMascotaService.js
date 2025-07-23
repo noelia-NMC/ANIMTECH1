@@ -1,3 +1,5 @@
+// perfilMascotaService.js
+// Este servicio maneja las operaciones relacionadas con los perfiles de mascotas.
 import API from './http'; 
 
 export const getMisPerfiles = async () => {

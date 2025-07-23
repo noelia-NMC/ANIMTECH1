@@ -1,3 +1,4 @@
+// Backend/src/controllers/historial.controller.js     web 
 const pool = require('../db');
 
 const getHistorial = async (req, res) => {

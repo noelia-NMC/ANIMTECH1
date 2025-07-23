@@ -1,6 +1,8 @@
+// src/pages/Register.jsx
 import { useState } from 'react';
 import { register } from '../services/auth';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // AÑADIDO
 import {
   RegisterContainer,
   RegisterCard,
@@ -22,6 +24,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth(); // AÑADIDO
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -30,8 +33,8 @@ export default function Register() {
     try {
       const res = await register(email, password);
       
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      // CAMBIO CRÍTICO: Usar el context en lugar de localStorage directamente
+      authLogin(res.data.user, res.data.token);
       
       navigate('/dashboard');
     } catch (err) {
@@ -48,7 +51,6 @@ export default function Register() {
   return (
     <ResponsiveWrapper>
       <RegisterContainer>
-        {/* Elementos decorativos flotantes */}
         <DecorativeElement size="150px" top="10%" left="10%" duration="5s" delay="0s" />
         <DecorativeElement size="100px" top="20%" right="15%" duration="7s" delay="1s" />
         <DecorativeElement size="80px" bottom="15%" left="20%" duration="6s" delay="2s" />

@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../db');                     //web
 const bcrypt = require('bcrypt');
 
 const getVeterinarios = async (req, res) => {

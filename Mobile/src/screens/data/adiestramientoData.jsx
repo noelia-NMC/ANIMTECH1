@@ -1,3 +1,6 @@
+// 📁 src/screens/adiestramientoData.js
+// (CÓDIGO COMPLETO Y CORREGIDO)
+
 export const dataPerro = {
   consejos: [
     {
@@ -79,6 +82,18 @@ export const dataPerro = {
         'Repite hasta que al oír "deja eso", ignore el objeto del suelo y te mire a ti esperando el premio bueno.',
       ],
     },
+    {
+      id: 't-p5',
+      icon: 'running',
+      title: 'Venir cuando lo llamas ("ven")',
+      pro_tip: 'Nunca llames a tu perro para regañarlo. El comando "ven" siempre debe tener una consecuencia positiva.',
+      steps: [
+        'Empieza en un lugar cerrado y seguro. Aléjate unos pasos de tu perro.',
+        'Di "ven" con voz alegre y da palmadas. Cuando venga hacia ti, dale muchos elogios y premios.',
+        'Practica en diferentes lugares, aumentando gradualmente la distancia.',
+        'Solo practica al aire libre cuando esté bien entrenado en casa.',
+      ],
+    },
   ],
 };
 
@@ -114,6 +129,12 @@ export const dataGato = {
       description: 'Usa juguetes como varitas con plumas para simular la caza. Permítele "atrapar" a su presa al final para que el juego sea satisfactorio.',
       image: 'https://images.pexels.com/photos/979247/pexels-photo-979247.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
     },
+    {
+      id: 'g6',
+      title: 'Respeta sus espacios',
+      description: 'Los gatos necesitan lugares altos y escondites donde sentirse seguros. No los fuerces a salir de sus refugios, déjalos venir a ti cuando estén listos.',
+      image: 'https://images.pexels.com/photos/1741205/pexels-photo-1741205.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    },
   ],
   tutoriales: [
     {
@@ -122,9 +143,10 @@ export const dataGato = {
       title: 'Tocar un objetivo ("target")',
       pro_tip: 'El "targeting" es la base de casi todo el adiestramiento felino. ¡Domina esto y podrás enseñar casi cualquier cosa!',
       steps: [
-        'Usa un objeto como un palito (el "target"). Acércalo a tu gato.',
+        'Usa un objeto como un palito o tu dedo (el "target"). Acércalo a tu gato.',
         'Por curiosidad, lo tocará con la nariz. Justo cuando lo haga, di "¡sí!" y dale un premio.',
-        'Aléjalo y repite, moviendo el target a diferentes lugares para que tenga que moverse para tocarlo.',
+        'Repite, moviendo el target a diferentes lugares para que tenga que moverse para tocarlo.',
+        'Añade la palabra "toca" justo antes de presentar el target.',
       ],
     },
     {
@@ -135,6 +157,7 @@ export const dataGato = {
       steps: [
         'Sostén un premio en tu mano cerrada, un poco por encima de su cabeza.',
         'Cuando levante una pata para tratar de alcanzarlo, di "¡choca!" y dale el premio.',
+        'Practica hasta que levante la pata solo con escuchar la palabra.',
         'Luego, presenta tu mano abierta y recompénsalo solo cuando su pata toque tu mano.',
       ],
     },
@@ -145,6 +168,7 @@ export const dataGato = {
       pro_tip: 'Haz que el transportín sea un mueble más de la casa, siempre abierto y con una manta cómoda dentro. Así no lo asociará solo con el veterinario.',
       steps: [
         'Usa el "targeting" (del primer tutorial) para guiarlo a tocar el interior del transportín.',
+        'Recompensa cada vez que se acerque o entre voluntariamente.',
         'Una vez que entre con confianza, empieza a cerrar la puerta por 1 segundo, premia y ábrela.',
         'Aumenta gradualmente el tiempo con la puerta cerrada. ¡Adiós estrés en los viajes!',
       ],
@@ -158,8 +182,58 @@ export const dataGato = {
         'Sostén un premio sabroso justo encima de la cabeza de tu gato.',
         'Sube lentamente el premio un poco hacia atrás. Para mantener el contacto visual, se sentará.',
         'En el momento exacto en que su trasero toque el suelo, di "sit" y dale el premio.',
-        '¡Sesiones muy cortas y divertidas son el secreto!',
+        '¡Sesiones muy cortas (1-2 minutos) y divertidas son el secreto!',
+      ],
+    },
+    {
+      id: 't-g5',
+      icon: 'volume-up',
+      title: 'Venir cuando lo llamas',
+      pro_tip: 'Usa un sonido específico (como un chasquido o silbido) además de su nombre. Los gatos responden mejor a sonidos agudos.',
+      steps: [
+        'Empieza cuando tu gato esté relajado y cerca de ti.',
+        'Di su nombre y haz el sonido que elegiste. Cuando te mire, dale un premio.',
+        'Repite desde distancias cortas, siempre premiando cuando venga.',
+        'Nunca uses este comando para algo negativo, siempre debe ser una experiencia positiva.',
       ],
     },
   ],
+};
+
+/**
+ * Determina el tipo de mascota (perro o gato) basado en el string de la especie.
+ * @param {string} especie - El string de la especie de la mascota (ej. "perro", "labrador", "gato siames").
+ * @returns {object} - Un objeto con el tipo ('perro', 'gato', 'desconocido'), los datos correspondientes y un emoji.
+ */
+export const determinarTipoMascota = (especie) => {
+  if (!especie || typeof especie !== 'string') {
+    // Si no hay especie, por defecto mostramos perro
+    return { tipo: 'desconocido', data: dataPerro, emoji: '🐾' };
+  }
+
+  const especieLimpia = especie.toLowerCase().trim();
+
+  // Palabras clave para identificar un perro
+  const palabrasClavePerro = [
+    'perro', 'can', 'canino', 'dog', 'cachorro', 'pastor', 'labrador', 'golden',
+    'bulldog', 'chihuahua', 'beagle', 'poodle', 'cocker', 'schnauzer', 'mestizo'
+  ];
+
+  // Palabras clave para identificar un gato
+  const palabrasClaveGato = [
+    'gato', 'felino', 'cat', 'gatito', 'minino', 'michi', 'siames', 'persa',
+    'angora', 'bengala', 'esfinge', 'comun europeo'
+  ];
+
+  if (palabrasClavePerro.some(palabra => especieLimpia.includes(palabra))) {
+    return { tipo: 'perro', data: dataPerro, emoji: '🐕' };
+  }
+
+  if (palabrasClaveGato.some(palabra => especieLimpia.includes(palabra))) {
+    return { tipo: 'gato', data: dataGato, emoji: '🐱' };
+  }
+
+  // Si no se encuentra ninguna palabra clave, se devuelve 'desconocido'
+  // y se muestran los datos de perro por defecto.
+  return { tipo: 'desconocido', data: dataPerro, emoji: '🐾' };
 };

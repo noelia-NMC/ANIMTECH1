@@ -1,4 +1,6 @@
 // 📁 services/eventosService.js
+// (No se requieren cambios. Es genérico y funciona correctamente)
+
 import API from './http'; // Usamos tu instancia axios con token y baseURL
 
 // Obtener todos los eventos del usuario autenticado

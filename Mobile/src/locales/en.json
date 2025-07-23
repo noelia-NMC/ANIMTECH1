@@ -1,23 +1,38 @@
+
 {
+  
   "settings": {
     "title": "Settings",
-    "account": "Account",
-    "editProfile": "Edit Profile",
-    "changePassword": "Change Password",
-    "appearance": "Appearance",
-    "darkMode": "Dark Mode",
+    "notifications_section": "Notifications",
+    "event_reminders": "Event reminders",
+    "new_rescues": "New rescues nearby",
+    "preferences_section": "Preferences",
     "language": "Language",
-    "notifications": "Notifications",
-    "collarAlerts": "Collar Alerts",
-    "reminders": "Appointment Reminders",
-    "about": "About",
-    "version": "App Version",
-    "terms": "Terms & Conditions",
-    "privacy": "Privacy Policy",
-    "logout": "Log Out"
+    "language_subtitle": "Select the app language",
+    "appearance": "Appearance",
+    "appearance_subtitle": "Customize the app's colors",
+    "temperature_units": "Temperature units",
+    "community_section": "Community & Support",
+    "contact_support": "Contact support",
+    "contact_support_subtitle": "Send us your questions or issues",
+    "propose_feature": "Propose a feature",
+    "propose_feature_subtitle": "Have an idea? Tell us!",
+    "about_section": "About",
+    "terms_conditions": "Terms and conditions",
+    "app_version": "App version",
+    "logout_button": "Log out",
+    "logout_confirm_title": "Log out",
+    "logout_confirm_message": "Are you sure you want to log out?",
+    "cancel": "Cancel",
+    "yes_logout": "Yes, log out",
+    "coming_soon_title": "Coming Soon",
+    "coming_soon_message": "The \"{feature}\" feature will be available very soon.",
+    "error_alert": "Error",
+    "error_open_link": "Could not open the link.",
+    "error_open_mail": "Could not open the mail app."
   },
   "home": {
-    "greeting": "Hello, {{name}}!",
+    "greeting": "Hello, {name}!",
     "howAreYou": "How are you feeling today?"
   }
 }

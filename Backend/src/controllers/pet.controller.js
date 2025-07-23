@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../db');                           //mobile y web
 
 // ===================================================================
 // FUNCIONES PARA LA APP MÓVIL (CRUD del Dueño sobre sus mascotas)

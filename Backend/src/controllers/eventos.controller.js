@@ -1,4 +1,5 @@
-// 📁 backend/src/controllers/eventos.controller.js
+// 📁 backend/src/controllers/eventos.controller.js       mobile
+
 const pool = require('../db');
 
 const ALLOWED_TYPES = [
@@ -20,7 +21,8 @@ exports.getEventos = async (req, res) => {
         TO_CHAR(e.date, 'YYYY-MM-DD') as date, 
         e.notes, 
         e.type, 
-        e.mascota_id, 
+        e.mascota_id,
+        e.notification_id, -- MEJORA: Obtener el ID de la notificación
         pm.nombre as mascota_nombre
       FROM eventos e
       JOIN perfiles_mascotas pm ON e.mascota_id = pm.id
@@ -41,7 +43,8 @@ exports.getEventos = async (req, res) => {
 exports.createEvento = async (req, res) => {
   try {
     const userId = req.user.id;
-    let { title, date, notes, type, mascotaId } = req.body;
+    // MEJORA: Recibimos notificationId desde el body
+    let { title, date, notes, type, mascotaId, notificationId } = req.body;
 
     if (!title || !date || !mascotaId) {
       return res.status(400).json({
@@ -59,12 +62,14 @@ exports.createEvento = async (req, res) => {
       });
     }
 
+    // MEJORA: Actualizamos la consulta para incluir el nuevo campo
     const query = `
-      INSERT INTO eventos (title, date, notes, type, user_id, mascota_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO eventos (title, date, notes, type, user_id, mascota_id, notification_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-    const values = [title.trim(), date, notes?.trim() || null, type, userId, mascotaId];
+    // MEJORA: Añadimos el nuevo valor al array de valores
+    const values = [title.trim(), date, notes?.trim() || null, type, userId, mascotaId, notificationId || null];
 
     const result = await pool.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -75,6 +80,7 @@ exports.createEvento = async (req, res) => {
       .json({ message: 'Error interno del servidor al crear el evento.' });
   }
 };
+
 /**
  * Elimina un evento, verificando que pertenezca al usuario que realiza la solicitud.
  */

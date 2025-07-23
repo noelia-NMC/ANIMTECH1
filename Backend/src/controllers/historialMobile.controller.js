@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../db');        //mobile
 
 /**
  * @description Obtiene un historial clínico unificado para una mascota específica.

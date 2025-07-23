@@ -23,5 +23,7 @@ router.put('/:id/aceptar', auth.verifyToken, teleconsultaController.aceptarTelec
 // El veterinario finaliza una consulta específica
 router.put('/:id/finalizar', auth.verifyToken, teleconsultaController.finalizarTeleconsulta);
 
+// Cancelar teleconsulta (para propietarios)
+router.put('/:id/cancelar', auth.verifyToken, teleconsultaController.cancelarTeleconsulta);
 
 module.exports = router;

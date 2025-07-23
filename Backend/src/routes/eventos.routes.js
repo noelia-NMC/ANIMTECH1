@@ -1,5 +1,4 @@
 // 📁 backend/src/routes/eventos.routes.js
-
 const express = require('express');
 const router = express.Router();
 const eventosController = require('../controllers/eventos.controller');

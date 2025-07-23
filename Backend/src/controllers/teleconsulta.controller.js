@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../db');                      //web
 
 // El propietario crea una solicitud. Su ID viene del token.
 exports.crearTeleconsulta = async (req, res) => {
@@ -118,5 +118,32 @@ exports.finalizarTeleconsulta = async (req, res) => {
   } catch (error) {
     console.error('Error al finalizar teleconsulta', error);
     res.status(500).json({ message: 'Error interno al finalizar la teleconsulta.' });
+  }
+};
+
+// Cancelar teleconsulta
+exports.cancelarTeleconsulta = async (req, res) => {
+  try {
+    const { id: consultaId } = req.params;
+    const propietario_id = req.user.id;
+
+    const result = await pool.query(
+      `UPDATE teleconsultas 
+       SET estado = 'cancelada' 
+       WHERE id = $1 AND propietario_id = $2 AND estado = 'pendiente' 
+       RETURNING *`,
+      [consultaId, propietario_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ 
+        message: 'No se encontró la consulta o no tienes permiso para cancelarla, o ya no está pendiente.' 
+      });
+    }
+
+    res.json({ message: 'Consulta cancelada correctamente', consulta: result.rows[0] });
+  } catch (error) {
+    console.error('Error al cancelar teleconsulta:', error);
+    res.status(500).json({ message: 'Error interno al cancelar la teleconsulta.' });
   }
 };

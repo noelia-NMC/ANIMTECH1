@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../db');                                //mobile
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const { db: firebaseDb } = require('../config/firebaseAdmin'); // Importamos la DB de Firebase
